@@ -8,7 +8,6 @@ import { SimService } from './services/simService.js';
 
 
 export class City extends THREE.Group {
-
   calculateRevenue() {
     let totalRevenue = 0;
     for (let x = 0; x < this.size; x++) {
@@ -19,29 +18,88 @@ export class City extends THREE.Group {
             case BuildingType.residential:
               totalRevenue += tile.building.generateRevenue();
               break;
-            // case BuildingType.commercial:
-            //   totalRevenue += tile.building.calculateBusinessTax();
-            //   break;
-            // case BuildingType.industrial:
-            //   totalRevenue += tile.building.calculateBusinessTax();
-            //   break;
-            // Add more cases for other building types
+            // Add cases for other building types if needed
           }
         }
       }
     }
     return totalRevenue;
   }
+  
   updateBudget() {
     const revenue = this.calculateRevenue();
     this.budget += revenue;
     this.updateBudgetDisplay(ui);
   }
-
+  
+  
   updateBudgetDisplay(ui) {
     console.log('Budget:', this.budget);
     ui.updateBudgetDisplay(this.budget);
   }
+  
+  placeBuilding(x, y, buildingType, city) {
+    const building = createBuilding(x, y, buildingType, this);
+    if (!building) return; // Exit if building creation failed
+  
+    const size = building.size;
+    const cost = this.buildingCost[buildingType];
+  
+    // Check if the city has enough budget
+    if (this.budget < cost) {
+      console.error(`Not enough funds to place ${buildingType} building. Required: ${cost}`);
+      return;
+    }
+  
+    // Check if there's enough space to place the building
+    for (let i = x; i < x + size; i++) {
+      for (let j = y; j < y + size; j++) {
+        const tile = this.getTile(i, j);
+        if (tile && tile.building) {
+          // There's already a building on one of the tiles
+          return;
+        }
+      }
+    }
+  
+    // Deduct the cost from the city's budget
+    this.budget -= cost;
+    this.updateBudgetDisplay(ui); // Update the budget display after deducting the cost
+  
+    // Place the building across multiple tiles
+    for (let i = x; i < x + size; i++) {
+      for (let j = y; j < y + size; j++) {
+        const tile = this.getTile(i, j);
+        tile.setBuilding(building);
+        tile.refreshView(this);
+      }
+    }
+  
+    // Update neighboring tiles for road connections
+    for (let i = x - 1; i <= x + size; i++) {
+      for (let j = y - 1; j <= y + size; j++) {
+        const tile = this.getTile(i, j);
+        if (tile) {
+          tile.refreshView(this);
+        }
+      }
+    }
+  
+    // Display a message indicating that revenue has been generated
+    const revenue = this.calculateRevenue();
+    if (revenue > 0) {
+      this.displayRevenueMessage(revenue);
+    }
+  }
+  
+  displayRevenueMessage(revenue) {
+    // Display a message indicating the revenue generated
+    alert(`Generated revenue: ${revenue}`);
+  }
+  
+  
+    // Deduct the
+  
   /**
    * Separate group for organizing debug meshes so they aren't included
    * in raycasting checks
@@ -313,7 +371,7 @@ bulldoze(x, y) {
     let count = 0;
     while (count++ < steps) {
       // Update services
-      // this.services.forEach((service)  service.simulate(this));
+      // this.services.forEach((service) => service.simulate(this));
   
       // Update each building
       for (let x = 0; x < this.size; x++) {
@@ -329,7 +387,7 @@ bulldoze(x, y) {
     }
     this.simTime++;
   }
-
+  
   /**
    * Finds and returns the neighbors of this tile
    * @param {number} x The x-coordinate of the tile

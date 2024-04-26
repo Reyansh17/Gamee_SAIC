@@ -70,17 +70,39 @@ export class GameUI {
   }
 
   /**
-   * Updates the values in the title bar
-   * @param {Game} game 
-   */
-  updateTitleBar(game) {
-    document.getElementById('city-name').innerHTML = game.city.name;
-    document.getElementById('population-counter').innerHTML = game.city.population;
+ * Updates the values in the title bar, including the simulation time and elapsed time
+ * @param {Game} game 
+ */
+updateTitleBar(game) {
+  document.getElementById('city-name').innerHTML = game.city.name;
+  document.getElementById('population-counter').innerHTML = game.city.population;
 
-    const date = new Date('1/1/2023');
-    date.setDate(date.getDate() + game.city.simTime);
-    document.getElementById('sim-time').innerHTML = date.toLocaleDateString();
-  }
+  const updateSimulationTime = () => {
+    const currentDate = new Date('1/1/2023');
+    currentDate.setSeconds(currentDate.getSeconds() + game.city.simTime);
+    document.getElementById('sim-time').innerHTML = currentDate.toLocaleDateString();
+  };
+
+  const updateElapsedTime = () => {
+    const elapsedTimeElement = document.getElementById('elapsed-time');
+    const elapsedSeconds = game.city.simTime;
+    const hours = Math.floor(elapsedSeconds / 3600);
+    const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+    const seconds = elapsedSeconds % 60;
+    elapsedTimeElement.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  // Update simulation time immediately
+  updateSimulationTime();
+
+  // Update simulation time every second
+  setInterval(updateSimulationTime, 1000);
+
+  // Update elapsed time immediately and every second
+  updateElapsedTime();
+  setInterval(updateElapsedTime, 1000);
+}
+
 
   /**
    * Updates the info panel with the information in the object
