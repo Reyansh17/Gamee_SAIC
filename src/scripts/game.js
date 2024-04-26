@@ -240,5 +240,4 @@ export class Game {
 // Create a new game when the window is loaded
 window.onload = () => {
   window.game = new Game();
-  
 }

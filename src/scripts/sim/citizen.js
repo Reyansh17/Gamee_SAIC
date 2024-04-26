@@ -1,6 +1,6 @@
-// import { CommercialZone } from './buildings/zones/Micro.js';
-// import { IndustrialZone } from './buildings/zones/firestaion.js';
-import { ResidentialZone } from './buildings/zones/OBHK.js';
+import { CommercialZone } from './buildings/zones/commercial.js';
+import { IndustrialZone } from './buildings/zones/industrial.js';
+import { ResidentialZone } from './buildings/zones/1BHK.js';
 import config from '../config.js';
 
 export class Citizen {

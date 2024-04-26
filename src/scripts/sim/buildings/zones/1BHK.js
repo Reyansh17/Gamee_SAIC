@@ -3,25 +3,38 @@ import { Zone } from './zone.js';
 import { ResidentsModule } from '../modules/residents.js';
 import { BuildingType } from '../buildingType.js';
 
-export class CBHK extends Zone {
+export class ResidentialZone extends Zone {
   /**
    * @type {ResidentsModule}
    */
   residents = new ResidentsModule(this);
 
 
+  generateRevenue() {
+    const revenuePerLevel = 100; // Adjust this value as needed
+    const revenue = revenuePerLevel ;
+    return  revenue;
+  }
+
+  simulate(city) {
+    super.simulate(city);
+    this.residents.simulate(city);
+
+    // Generate revenue every 10 simulation steps
+    if (city.simulationStep % 10 === 0) {
+      this.generateRevenue(city);
+    }
+  } 
   /** 
    * @type {number}
    */
-  buildingCost = 800;
-
+  buildingCost = 300;
 
   constructor(x, y) {
     super(x, y);
     this.name = generateBuildingName();
     this.type = BuildingType.residential;
-    this.size = 3;
-    this.style = 'C'
+    this.size = 1;
   }
 
   /**x

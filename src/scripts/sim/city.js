@@ -1,11 +1,14 @@
-import * as THREE from "three";
-import { BuildingType } from "./buildings/buildingType.js";
-import { createBuilding } from "./buildings/buildingFactory.js";
-import { Tile } from "./tile.js";
-import { PowerService } from "./services/power.js";
-import { SimService } from "./services/simService.js";
+import * as THREE from 'three';
+import { BuildingType } from './buildings/buildingType.js';
+import { createBuilding } from './buildings/buildingFactory.js';
+import { Tile } from './tile.js';
+import { VehicleGraph } from './vehicles/vehicleGraph.js';
+import { PowerService } from './services/power.js';
+import { SimService } from './services/simService.js';
+
 
 export class City extends THREE.Group {
+
   calculateRevenue() {
     let totalRevenue = 0;
     for (let x = 0; x < this.size; x++) {
@@ -30,17 +33,13 @@ export class City extends THREE.Group {
     return totalRevenue;
   }
   updateBudget() {
-    if (this.elapsedMinutes % 15 === 0) {
-      // Generate revenue every 15 minutes
-      const revenue = this.calculateRevenue();
-      this.budget += revenue;
-      this.updateBudgetDisplay(ui);
-      this.elapsedMinutes = 0; // Reset elapsedMinutes
-    }
-}
+    const revenue = this.calculateRevenue();
+    this.budget += revenue;
+    this.updateBudgetDisplay(ui);
+  }
 
   updateBudgetDisplay(ui) {
-    console.log("Budget:", this.budget);
+    console.log('Budget:', this.budget);
     ui.updateBudgetDisplay(this.budget);
   }
   /**
@@ -50,7 +49,7 @@ export class City extends THREE.Group {
    */
   debugMeshes = new THREE.Group();
   /**
-   * Root node for all scene objects
+   * Root node for all scene objects 
    * @type {THREE.Group}
    */
   root = new THREE.Group();
@@ -58,28 +57,18 @@ export class City extends THREE.Group {
    * The budget of the city
    * @type {number}
    */
-  budget = 4000;
+  budget = 4000;  
 
-  /** Building costs
+  /** Building costs 
    * */
-  buildingCost = {
+  buildingCost = { 
     residential: 300,
     TBHK: 500,
     CBHK: 800,
-    mini: 500,
-    macro: 700,
-    large: 1000,
-    bank: 2000,
-    firestation: 300,
-    Hospital: 500,
-    Police : 250,
-    School: 500,
-    SM: 500,
-    Concert: 1500,
-    Restaurent: 500,
-    TH:0,
+    commercial: 2000,
+    industrial: 3000,
 
-  };
+  }
   /**
    * List of services for the city
    * @type {SimService}
@@ -100,19 +89,17 @@ export class City extends THREE.Group {
    */
   tiles = [];
   /**
-   *
-   * @param {VehicleGraph} size
+   * 
+   * @param {VehicleGraph} size 
    */
-  // vehicleGraph;
+  vehicleGraph;
 
-  constructor(size, name = "CITYSCAPE") {
+  constructor(size, name = 'CITYSCAPE') {
     super();
-    this.buildingCooldown = 0;
     this.updateBudgetDisplay(ui); // Update the budget display on initial load
     this.name = name;
     this.size = size;
-    this.elapsedMinutes = 0; // Initialize elapsedMinutes to 0
-
+    
     this.add(this.debugMeshes);
     this.add(this.root);
 
@@ -130,12 +117,9 @@ export class City extends THREE.Group {
 
     this.services = [];
     this.services.push(new PowerService());
-
-    // Place a building at the center of the city
-    const centerX = Math.floor(this.size / 2);
-    const centerY = Math.floor(this.size / 2);
-    this.placeBuilding(centerX, centerY, BuildingType.TH, this);
     
+    this.vehicleGraph = new VehicleGraph(this.size);
+    this.debugMeshes.add(this.vehicleGraph);
   }
 
   /**
@@ -160,20 +144,16 @@ export class City extends THREE.Group {
    * @returns {Tile | null}
    */
   getTile(x, y) {
-    if (
-      x === undefined ||
-      y === undefined ||
-      x < 0 ||
-      y < 0 ||
-      x >= this.size ||
-      y >= this.size
-    ) {
+    if (x === undefined || y === undefined ||
+      x < 0 || y < 0 ||
+      x >= this.size || y >= this.size) {
       return null;
     } else {
       return this.tiles[x][y];
     }
   }
 
+  
   /**
    * Step the simulation forward by one step
    * @type {number} steps Number of steps to simulate forward in time
@@ -190,63 +170,82 @@ export class City extends THREE.Group {
           this.getTile(x, y).simulate(this);
         }
       }
-
-      // Decrement the buildingCooldown
-      if (this.buildingCooldown > 0) {
-        this.buildingCooldown--;
-      }
     }
     this.simTime++;
-}
+  }
 
   /**
    * Places a building at the specified coordinates if the
    * tile does not already have a building on it
-   * @param {number} x
-   * @param {number} y
-   * @param {string} buildingType
+   * @param {number} x 
+   * @param {number} y 
+   * @param {string} buildingType 
    */
 
-  placeBuilding(x, y, buildingType, city) {
-    if (this.buildingCooldown > 0) {
-      console.error(`Cannot place a building during cooldown (remaining: ${this.buildingCooldown} minutes)`);
-      return;
-    }
+placeBuilding(x, y, buildingType, city) {
+  const building = createBuilding(x, y, buildingType, this);
+  if (!building) return; // Exit if building creation failed
 
-    const building = createBuilding(x, y, buildingType, this);
-    if (!building) return; // Exit if building creation failed
+  const size = building.size;
+  const cost = this.buildingCost[buildingType];
 
-    const size = building.size;
-    const cost = this.buildingCost[buildingType];
+  // Check if the city has enough budget
+  if (this.budget < cost) {
+    console.error(`Not enough funds to place ${buildingType} building. Required: ${cost}`);
+    return;
+  }
 
-    // Check if the city has enough budget
-    if (this.budget < cost) {
-      console.error(
-        `Not enough funds to place ${buildingType} building. Required: ${cost}`
-      );
-      return;
-    }
-
-    // Check if there's enough space to place the building
-    for (let i = x; i < x + size; i++) {
-      for (let j = y; j < y + size; j++) {
-        const tile = this.getTile(i, j);
-        if (tile && tile.building) {
-          // There's already a building on one of the tiles
-          return;
-        }
+  // Check if there's enough space to place the building
+  for (let i = x; i < x + size; i++) {
+    for (let j = y; j < y + size; j++) {
+      const tile = this.getTile(i, j);
+      if (tile && tile.building) {
+        // There's already a building on one of the tiles
+        return;
       }
     }
+  }
 
-    // Deduct the cost from the city's budget
-    this.budget -= cost;
-    this.updateBudgetDisplay(ui); // Update the budget display after deducting the cost
+  // Deduct the cost from the city's budget
+  this.budget -= cost;
+  this.updateBudgetDisplay(ui); // Update the budget display after deducting the cost
 
-    // Place the building across multiple tiles
+  // Place the building across multiple tiles
+  for (let i = x; i < x + size; i++) {
+    for (let j = y; j < y + size; j++) {
+      const tile = this.getTile(i, j);
+      tile.setBuilding(building);
+      tile.refreshView(this);
+    }
+  }
+
+  // Update neighboring tiles for road connections
+  for (let i = x - 1; i <= x + size; i++) {
+    for (let j = y - 1; j <= y + size; j++) {
+      const tile = this.getTile(i, j);
+      if (tile) {
+        tile.refreshView(this);
+      }
+    }
+  }
+}
+
+bulldoze(x, y) {
+  const tile = this.getTile(x, y);
+
+  if (tile.building) {
+    const size = tile.building.size;
+
+    if (tile.building.type === BuildingType.road) {
+      this.vehicleGraph.updateTile(x, y, null);
+    }
+
+    // Remove the building from multiple tiles
     for (let i = x; i < x + size; i++) {
       for (let j = y; j < y + size; j++) {
         const tile = this.getTile(i, j);
-        tile.setBuilding(building);
+        tile.building.dispose();
+        tile.setBuilding(null);
         tile.refreshView(this);
       }
     }
@@ -261,42 +260,10 @@ export class City extends THREE.Group {
       }
     }
   }
-
-  bulldoze(x, y) {
-    const tile = this.getTile(x, y);
-
-    if (tile.building) {
-      const size = tile.building.size;
-
-      if (tile.building.type === BuildingType.road) {
-      }
-
-      // Remove the building from multiple tiles
-      for (let i = x; i < x + size; i++) {
-        for (let j = y; j < y + size; j++) {
-          const tile = this.getTile(i, j);
-          tile.building.dispose();
-          tile.setBuilding(null);
-          tile.refreshView(this);
-        }
-      }
-
-      // Update neighboring tiles for road connections
-      for (let i = x - 1; i <= x + size; i++) {
-        for (let j = y - 1; j <= y + size; j++) {
-          const tile = this.getTile(i, j);
-          if (tile) {
-            tile.refreshView(this);
-          }
-        }
-      }
-      this.buildingCooldown = 3;
-
-    }
-  }
+}
 
   draw() {
-    // this.vehicleGraph.updateVehicles();
+    this.vehicleGraph.updateVehicles();
   }
 
   /**
@@ -333,7 +300,7 @@ export class City extends THREE.Group {
       // Add this tiles neighbor's to the search list
       tilesToSearch.push(...this.getTileNeighbors(tile.x, tile.y));
 
-      // If this tile passes the criteria
+      // If this tile passes the criteria 
       if (filter(tile)) {
         return tile;
       }
@@ -342,65 +309,26 @@ export class City extends THREE.Group {
     return null;
   }
 
-  /**
- * Step the simulation forward by one step
- * @param {number} deltaTime The time elapsed since the last frame in milliseconds
- */
-simulate(deltaTime) {
-  // Convert deltaTime to seconds
-  const deltaSeconds = deltaTime / 1000;
-
-  // Update services
-  this.services.forEach((service) => service.simulate(this, deltaSeconds));
-
-  // Update each building
-  for (let x = 0; x < this.size; x++) {
-    for (let y = 0; y < this.size; y++) {
-      this.getTile(x, y).simulate(this, deltaSeconds);
+  simulate(steps = 1) {
+    let count = 0;
+    while (count++ < steps) {
+      // Update services
+      // this.services.forEach((service)  service.simulate(this));
+  
+      // Update each building
+      for (let x = 0; x < this.size; x++) {
+        for (let y = 0; y < this.size; y++) {
+          this.getTile(x, y).simulate(this);
+        }
+      }
+  
+      // Update budget
+      if (count % 10 === 0) { // Update budget every 10 simulation steps
+        this.updateBudget();
+      }
     }
+    this.simTime++;
   }
-
-  // Decrement the buildingCooldown
-  if (this.buildingCooldown > 0) {
-    this.buildingCooldown -= deltaSeconds;
-  }
-
-  // Update the elapsed time
-  this.elapsedSeconds += deltaSeconds;
-
-  // Update the simulation time if a second has elapsed
-  if (this.elapsedSeconds >= 1) {
-    this.simTime += Math.floor(this.elapsedSeconds);
-    this.elapsedSeconds = Math.max(0, this.elapsedSeconds - Math.floor(this.elapsedSeconds));
-
-    // Update budget every 15 minutes (900 seconds)
-    if (this.simTime % 900 === 0) {
-      this.updateBudget();
-    }
-  }
-}
-
-  // simulate(steps = 1) {
-  //   let count = 0;
-  //   while (count++ < steps) {
-  //     // Update services
-  //     // this.services.forEach((service)  service.simulate(this));
-
-  //     // Update each building
-  //     for (let x = 0; x < this.size; x++) {
-  //       for (let y = 0; y < this.size; y++) {
-  //         this.getTile(x, y).simulate(this);
-  //       }
-  //     }
-
-  //     // Update budget
-  //     if (count % 10 === 0) {
-  //       // Update budget every 10 simulation steps
-  //       this.updateBudget();
-  //     }
-  //   }
-  //   this.simTime++;
-  // }
 
   /**
    * Finds and returns the neighbors of this tile

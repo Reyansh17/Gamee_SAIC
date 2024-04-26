@@ -44,6 +44,32 @@ export class Tile extends SimObject {
     }
   }
 
+  // refreshView(city) {
+  //   this.building?.refreshView(city);
+  //   if (this.building?.hideTerrain) {
+  //     this.setMesh(null);
+  //   } else {
+  //     /**
+  //      * @type {THREE.Mesh}
+  //      */
+  //     const mesh = window.assetManager.getModel(this.terrain, this);
+  //     mesh.name = this.terrain;
+  //     this.setMesh(mesh);
+  //   }
+  // }
+// // In the Tile class
+// refreshView(city) {
+//   this.building?.refreshView(city);
+
+//   if (this.building?.hideTerrain || (this.building && this.building.size > 1)) {
+//     this.setMesh(null);
+//   } else {
+//     const mesh = window.assetManager.getModel(this.terrain, this);
+//     mesh.name = this.terrain;
+//     this.setMesh(mesh);
+//   }
+// }
+// In the Tile class
 refreshView(city) {
   this.building?.refreshView(city);
 

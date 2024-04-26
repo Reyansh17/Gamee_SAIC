@@ -1,10 +1,9 @@
-
 import { City } from '../../city.js';
 import { JobsModule } from '../modules/jobs.js';
 import { BuildingType } from '../buildingType.js';
 import { Zone } from './zone.js';
 
-export class Hospital extends Zone {
+export class IndustrialZone extends Zone {
   /**
    * @type {JobsModule}
    */
@@ -14,7 +13,6 @@ export class Hospital extends Zone {
     super(x, y);
     this.name = generateBusinessName();
     this.type = BuildingType.industrial;
-    this.size = 1;
   }
 
   /**

@@ -116,9 +116,98 @@ export default {
     "type": "power",
     "filename": "industry-factory-old.glb"
   },
+  "power-line": {
+    "type": "power",
+    "filename": "power_line_pole_modified.glb"
+  },
+  "road-straight": {
+    "type": "road",
+    "filename": "tile-road-straight.glb",
+    "castShadow": false
+  },
+  "road-end": {
+    "type": "road",
+    "filename": "tile-road-end.glb",
+    "castShadow": false
+  },
+  "road-corner": {
+    "type": "road",
+    "filename": "tile-road-curve.glb",
+    "castShadow": false
+  },
+  "road-three-way": {
+    "type": "road",
+    "filename": "tile-road-intersection-t.glb",
+    "castShadow": false
+  },
+  "road-four-way": {
+    "type": "road",
+    "filename": "tile-road-intersection.glb",
+    "castShadow": false
+  },
   "grass": {
     "type": "terrain",
     "filename": "tile-plain_grass.glb",
     "castShadow": false
+  },
+  "car-taxi": {
+    "type": "vehicle",
+    "filename": "car-taxi.glb",
+    "rotation": 90
+  },
+  "car-police": {
+    "type": "vehicle",
+    "filename": "car-police.glb",
+    "rotation": 90
+  },
+  "car-passenger": {
+    "type": "vehicle",
+    "filename": "car-passenger.glb",
+    "rotation": 90
+  },
+  "car-veteran": {
+    "type": "vehicle",
+    "filename": "car-veteran.glb",
+    "rotation": 90
+  },
+  "truck": {
+    "type": "vehicle",
+    "filename": "truck.glb",
+    "rotation": 90
+  },
+  "car-hippie-van": {
+    "type": "vehicle",
+    "filename": "car-hippie-van.glb",
+    "rotation": 90
+  },
+  "car-tow-truck": {
+    "type": "vehicle",
+    "filename": "car-tow-truck.glb",
+    "rotation": 90
+  },
+  "car-ambulance-pickup": {
+    "type": "vehicle",
+    "filename": "car-ambulance-pickup.glb",
+    "rotation": 90
+  },
+  "car-passenger-race": {
+    "type": "vehicle",
+    "filename": "car-passenger-race.glb",
+    "rotation": 90
+  },
+  "car-baywatch": {
+    "type": "vehicle",
+    "filename": "car-baywatch.glb",
+    "rotation": 90
+  },
+  "car-truck-dump": {
+    "type": "vehicle",
+    "filename": "car-truck-dump.glb",
+    "rotation": 90
+  },
+  "car-truck-armored-truck": {
+    "type": "vehicle",
+    "filename": "armored-truck.glb",
+    "rotation": 90
   }
 }

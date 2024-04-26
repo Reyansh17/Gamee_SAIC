@@ -25,7 +25,10 @@ export default {
       // Chance for a resident to move in
       residentMoveInChance: 0.5,
     },
-
+    roadAccess: {
+      // Max distance to search for a road when determining road access
+      searchDistance: 3       
+    },
   },
   citizen: {
      // Minimum working age for a citizen
@@ -34,5 +37,15 @@ export default {
     retirementAge: 65,       
     // Max Manhattan distance a citizen will search for a job
     maxJobSearchDistance: 4   
-  }
+  },
+  vehicle: {
+    // The distance travelled per millisecond
+    speed: 0.0005,            
+    // The start/end time where the vehicle should fade
+    fadeTime: 500,  
+    // Maximum lifetime of a vehicle (controls max # of vehicles on screen)     
+    maxLifetime: 10000,
+    // How often vehicles are spawned in milliseconds
+    spawnInterval: 1000     
+  },
 }
